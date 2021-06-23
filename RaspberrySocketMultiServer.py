@@ -69,6 +69,7 @@ class RaspberryServer(Thread):
                 t3.start()
         finally:
             users.remove(self.socket)
+            del usersNickname[senderSocketIndex]
             self.socket.close()
             serverSocket.close()
             
