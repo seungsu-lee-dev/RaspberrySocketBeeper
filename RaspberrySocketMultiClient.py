@@ -3,14 +3,14 @@ import sys
 from threading import *
 
 class ClientInit:
-    global clientSocket
     HOST = 'localhost'
     PORT = 9999
     ADDR = (HOST, PORT)
 
-    def __init__(self):
+    def __init__(self, nickname):
         super().__init__()
         self.clientSocket = None
+        self.nickname = nickname
         
     def conn(self):
         self.clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -24,11 +24,27 @@ class ClientInit:
         
     def run(self):
         self.conn()
-        t1 = ClientSender(self.clientSocket)
+        t1 = NickName(self.nickname, self.clientSocket)
         t1.start()
-        t2 = ClientReceiver(self.clientSocket)
-        t2.start()
+        
+class NickName(Thread):
 
+    def __init__(self, nickname, socket):
+        super().__init__()
+        self.clientSocket = socket
+        self.nickname = nickname
+
+    def run(self):
+        nickname = "nickname:" + self.nickname
+        self.clientSocket.sendall(nickname.encode())
+        data = self.clientSocket.recv(1024)
+        if "Entered ChatRoom" in data.decode():
+            print("Entered ChatRoom")
+            t2 = ClientSender(self.clientSocket)
+            t2.start()
+            t3 = ClientReceiver(self.clientSocket)
+            t3.start()
+            
 class ClientSender(Thread):
     
     def __init__(self, socket):
@@ -36,10 +52,10 @@ class ClientSender(Thread):
         self.clientSocket = socket
         
     def run(self):
+
         while True:
-            sendData = input("input data: ")
+            sendData = input()
             if sendData:
-                print('Send')
                 self.clientSocket.sendall(sendData.encode())
                 if sendData == '\stop':
                     break
@@ -55,12 +71,12 @@ class ClientReceiver(Thread):
         while True:
             data = self.clientSocket.recv(1024)
             if data:
-                # 안되면 sender bool 수정
-                print('Received', repr(data.decode()))
+                print(repr(data.decode())[1:-1])
                 if data == '\stop':
                     break
         self.clientSocket.close()
         print("ClientReceiverThread Stop")
 
-c = ClientInit()
+nickname = input("input nickname: ")
+c = ClientInit(nickname)
 c.run()
