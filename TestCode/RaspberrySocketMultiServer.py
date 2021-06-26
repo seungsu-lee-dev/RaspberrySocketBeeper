@@ -1,20 +1,6 @@
 from socket import *
 from select import *
 from threading import *
-import pymysql
-
-
-#DB설정
-data1 = ""
-data2 = ""
-row = None #테이블의 행을 받아줌
-sql = ""
-
-conn = pymysql.connect(host='192.168.0.84', user='root', password='1234', db='mysql', charset='utf8') #접속정보
-cur = conn.cursor()
-
-
-
 
 HOST = 'localhost'
 PORT = 9999
@@ -54,30 +40,21 @@ class RaspberryServer(Thread):
         users.append(socket)
         self.socket = socket
 
-#     def nickname(self):
-#         try:
-#             while True:
-#                 nickname = self.socket.recv(1024)
-#                 if "nickname:" in nickname.decode():
-#                     nickname = nickname.decode().split(":")[1]
-#                     usersNickname.append(nickname)
-#                     self.socket.sendall("Entered ChatRoom".encode())
-#                     break
-#         except:
-#             pass
-        
-    def SELECT(self, add):
-        cur.execute("SELECT * FROM PP WHERE NUM = "+add.decode())
-        while (True):      
-            row = cur.fetchone()
-            if row == None:
-                break
-            data1 = row[0]
-            data2 = row[1]
-            print("%2s" % data2)
-            return data2
+    def nickname(self):
+        try:
+            while True:
+                nickname = self.socket.recv(1024)
+                if "nickname:" in nickname.decode():
+                    nickname = nickname.decode().split(":")[1]
+                    usersNickname.append(nickname)
+                    self.socket.sendall("Entered ChatRoom".encode())
+                    break
+        except:
+            pass
+                    
 
     def run(self):
+        self.nickname()
         print("sub thread start", len(users))
         print('Connected by', ADDR)
         print('client Socket', self.socket)
@@ -87,31 +64,28 @@ class RaspberryServer(Thread):
                 if not data:
                     break
                 print('Received from', ADDR, data.decode())
-#                 num = data.decode()
-                DBdata = self.SELECT(data)
-                
                 senderSocketIndex = users.index(self.socket)
-                t3 = ServerSender(data, senderSocketIndex, DBdata)
+                t3 = ServerSender(data, senderSocketIndex)
                 t3.start()
         finally:
             users.remove(self.socket)
+            del usersNickname[senderSocketIndex]
             self.socket.close()
             serverSocket.close()
             
 class ServerSender(Thread):
     global users
     
-    def __init__(self, data, senderSocketIndex, DBdata):
+    def __init__(self, data, senderSocketIndex):
         super().__init__()
         self.data = data
         self.senderSocketIndex = senderSocketIndex
-        self.DBdata = DBdata
 
     def run(self):
         for i in range(len(users)):
             tempSocket = users[i]
-#             newData = self.data.decode()
-            tempSocket.sendall(self.DBdata.encode())
-
+            newData = usersNickname[self.senderSocketIndex]+" : "+self.data.decode()
+            tempSocket.sendall(newData.encode())
+            
 t1 = Waiting()
 t1.start()
