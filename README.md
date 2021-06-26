@@ -8,7 +8,7 @@
 
 사용 하드웨어 : RaspberryPi(라즈베리파이) 서버 1대, 클라이언트 2대 총 3대
 
-사용 부품 : 16X2 LCD, 4X4 Keypad, LED, , Buzzer
+사용 부품 : 16X2 LCD, 4X4 Keypad, LED, Buzzer
 
 개인 공부기간 : 2021년 6월 17일 ~ 2021년 6월 25일
 
