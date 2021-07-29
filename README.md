@@ -4,7 +4,7 @@
 
 사용 언어 : Python
 
-사용 프로그램 : Python IDLE
+사용 IDE : Python IDLE
 
 사용 하드웨어 : RaspberryPi(라즈베리파이) 서버 1대, 클라이언트 2대 총 3대
 
